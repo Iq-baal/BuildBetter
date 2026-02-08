@@ -199,7 +199,7 @@ export default function BuildBetter() {
       // add seed to prompt for consistency - same pitch = same seed = same response
       const seed = pitchHash % 10000;
 
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-thinking-exp:generateContent?key=${apiKey || localStorage.getItem('gemini_api_key')}`, {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey || localStorage.getItem('gemini_api_key')}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
