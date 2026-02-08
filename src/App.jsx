@@ -199,7 +199,7 @@ export default function BuildBetter() {
       // add seed to prompt for consistency - same pitch = same seed = same response
       const seed = pitchHash % 10000;
 
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey || localStorage.getItem('gemini_api_key')}`, {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey || localStorage.getItem('gemini_api_key')}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -266,7 +266,22 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'api call failed');
+        const errorMsg = errorData.error?.message || 'api call failed';
+        
+        // if model not found, try to list available models
+        if (errorMsg.includes('not found') || errorMsg.includes('not supported')) {
+          console.error('Model not available. Trying to list available models...');
+          
+          try {
+            const listResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey || localStorage.getItem('gemini_api_key')}`);
+            const models = await listResponse.json();
+            console.log('Available models:', models);
+          } catch (e) {
+            console.error('Could not list models:', e);
+          }
+        }
+        
+        throw new Error(errorMsg);
       }
 
       const data = await response.json();
