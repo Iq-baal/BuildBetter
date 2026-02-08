@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { TrendingDown, AlertTriangle, Target, DollarSign, BarChart3, Zap, Layers } from 'lucide-react';
+import { TrendingUp, AlertTriangle, Target, DollarSign, BarChart3, Zap, Layers, Rocket, TrendingDown } from 'lucide-react';
 
-// yeah i know this is overkill but the fluid effect is worth it
+// dense fluid effect that aggressively chases the mouse
 const FluidBackground = () => {
   const canvasRef = useRef(null);
   const mouseRef = useRef({ x: 0, y: 0 });
@@ -15,16 +15,16 @@ const FluidBackground = () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     
-    // init particles - trying to keep this performant
-    const particleCount = 150;
+    // init particles - balanced for performance and visual density
+    const particleCount = 250;
     for (let i = 0; i < particleCount; i++) {
       particlesRef.current.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-        radius: Math.random() * 2 + 1,
-        color: `hsla(${Math.random() * 60 + 200}, 70%, 60%, 0.6)` // blues to purples
+        vx: (Math.random() - 0.5) * 2,
+        vy: (Math.random() - 0.5) * 2,
+        radius: Math.random() * 2.5 + 1,
+        color: `hsla(${Math.random() * 60 + 200}, 70%, 60%, 0.7)` // blues to purples
       });
     }
     
@@ -38,7 +38,7 @@ const FluidBackground = () => {
     // animation loop
     let animationId;
     const animate = () => {
-      ctx.fillStyle = 'rgba(8, 10, 28, 0.1)'; // fade trail effect
+      ctx.fillStyle = 'rgba(8, 10, 28, 0.08)'; // balanced fade
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       particlesRef.current.forEach((p, i) => {
@@ -46,20 +46,20 @@ const FluidBackground = () => {
         p.x += p.vx;
         p.y += p.vy;
         
-        // mouse interaction - pulls particles towards mouse
+        // aggressive mouse interaction - particles chase the mouse
         const dx = mouseRef.current.x - p.x;
         const dy = mouseRef.current.y - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         
-        if (dist < 200) {
-          const force = (200 - dist) / 200;
-          p.vx += (dx / dist) * force * 0.1;
-          p.vy += (dy / dist) * force * 0.1;
+        if (dist < 350) { // good radius of influence
+          const force = (350 - dist) / 350;
+          p.vx += (dx / dist) * force * 0.4; // strong force
+          p.vy += (dy / dist) * force * 0.4;
         }
         
-        // damping so they dont go crazy
-        p.vx *= 0.95;
-        p.vy *= 0.95;
+        // less damping so they move faster
+        p.vx *= 0.98;
+        p.vy *= 0.98;
         
         // wrap around edges
         if (p.x < 0) p.x = canvas.width;
@@ -73,21 +73,24 @@ const FluidBackground = () => {
         ctx.fillStyle = p.color;
         ctx.fill();
         
-        // connect nearby particles - this creates the fluid mesh effect
-        particlesRef.current.slice(i + 1).forEach(p2 => {
-          const dx2 = p.x - p2.x;
-          const dy2 = p.y - p2.y;
-          const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-          
-          if (dist2 < 100) {
-            ctx.beginPath();
-            ctx.strokeStyle = `hsla(220, 70%, 60%, ${0.2 * (1 - dist2 / 100)})`;
-            ctx.lineWidth = 0.5;
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.stroke();
-          }
-        });
+        // connect nearby particles - reduced for performance
+        // only check every 3rd particle to reduce calculations
+        if (i % 3 === 0) {
+          particlesRef.current.slice(i + 1, i + 20).forEach(p2 => { // limit connections per particle
+            const dx2 = p.x - p2.x;
+            const dy2 = p.y - p2.y;
+            const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+            
+            if (dist2 < 120) { // moderate connection distance
+              ctx.beginPath();
+              ctx.strokeStyle = `hsla(220, 70%, 60%, ${0.25 * (1 - dist2 / 120)})`;
+              ctx.lineWidth = 0.6;
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.stroke();
+            }
+          });
+        }
       });
       
       animationId = requestAnimationFrame(animate);
@@ -206,42 +209,64 @@ export default function BuildBetter() {
             {
               parts: [
                 {
-                  text: `You are BuildBetter AI - a brutally honest startup failure analyst.
+                  text: `You are BuildBetter AI - an evidence-driven startup viability analyst.
 
 CRITICAL: Your analysis must be DETERMINISTIC and CONSISTENT. For the same startup idea, you must give IDENTICAL scores and reasoning every time. Use the seed number ${seed} to maintain consistency.
 
 Your role:
-- Analyze startup viability using historical failure patterns
-- Be skeptical, evidence-driven, unsentimental
-- NO POLITENESS. NO HYPE. NO HEDGING.
+- Analyze startup viability using historical patterns, market data, and realistic projections
+- Be balanced, evidence-driven, and objective
+- Provide honest assessment without being overly pessimistic or optimistic
+- Consider both risks AND opportunities
 - Be direct, structured, accurate
+
+SCORING GUIDELINES:
+- Scalability Score (0-100): How well the idea can scale (70+ = high scalability, 40-69 = moderate, <40 = limited)
+- Market Sentiment (0-100): Current market receptiveness (70+ = strong demand, 40-69 = moderate interest, <40 = weak)
+- Innovation Index (0-100): Uniqueness and competitive advantage (70+ = highly innovative, 40-69 = incremental, <40 = commoditized)
 
 OUTPUT ONLY VALID JSON (no markdown, no preamble, no code blocks):
 {
-  "failureProbability": <number 0-100>,
-  "topFailureReasons": [
-    "<specific technical reason 1>",
-    "<specific market reason 2>",
-    "<specific execution reason 3>"
+  "scalabilityScore": <number 0-100>,
+  "scalabilityExplanation": [
+    "<growth potential insight>",
+    "<infrastructure scalability>",
+    "<market expansion opportunity>"
   ],
   "marketSentimentIndex": <number 0-100>,
   "marketSentimentExplanation": [
     "<macro trend observation>",
-    "<investor behavior pattern>",
-    "<market saturation insight>"
+    "<customer demand pattern>",
+    "<market timing insight>"
+  ],
+  "innovationIndex": <number 0-100>,
+  "innovationExplanation": [
+    "<unique value proposition>",
+    "<competitive differentiation>",
+    "<technology or approach novelty>"
+  ],
+  "keyRisks": [
+    "<specific risk 1>",
+    "<specific risk 2>",
+    "<specific risk 3>"
+  ],
+  "keyOpportunities": [
+    "<specific opportunity 1>",
+    "<specific opportunity 2>",
+    "<specific opportunity 3>"
   ],
   "exitAlignmentScore": <number 0-100>,
   "exitAlignmentExplanation": {
     "acquirerTypes": "<likely acquirers>",
     "attractiveness": "<why they would or wouldnt buy>"
   },
-  "historicalFailurePatterns": "<compare to 2-3 specific failed startups with similar patterns>",
-  "whatCouldChange": [
-    "<concrete tactical change 1>",
-    "<concrete tactical change 2>",
-    "<concrete tactical change 3>"
+  "historicalComparisons": "<compare to 2-3 similar startups (both successful and failed) with similar patterns>",
+  "strategicRecommendations": [
+    "<concrete tactical recommendation 1>",
+    "<concrete tactical recommendation 2>",
+    "<concrete tactical recommendation 3>"
   ],
-  "brutalSummary": "<one paragraph truth bomb - no sugar coating>"
+  "balancedSummary": "<one paragraph balanced assessment covering both potential and challenges>"
 }
 
 STARTUP PITCH:
@@ -341,17 +366,11 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
     }
   };
 
-  // color helpers for scores
-  const getScoreColor = (score) => {
-    if (score >= 70) return '#ef4444';
-    if (score >= 40) return '#f59e0b';
-    return '#10b981';
-  };
-
-  const getInverseScoreColor = (score) => {
-    if (score <= 30) return '#ef4444';
-    if (score <= 60) return '#f59e0b';
-    return '#10b981';
+  // color helpers for scores - higher is better
+  const getPositiveScoreColor = (score) => {
+    if (score >= 70) return '#10b981'; // green for high scores
+    if (score >= 40) return '#f59e0b'; // orange for medium
+    return '#ef4444'; // red for low
   };
 
   return (
@@ -634,7 +653,7 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
             maxWidth: '600px',
             margin: '0 auto'
           }}>
-            Evidence-driven startup viability analysis powered by AI
+            Balanced, evidence-driven startup viability analysis powered by AI
           </p>
         </div>
 
@@ -694,10 +713,10 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
               gap: '24px',
               marginBottom: '48px'
             }}>
-              {/* failure probability */}
+              {/* scalability score */}
               <div className="glass-card">
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
-                  <TrendingDown size={24} color="#ef4444" style={{ marginRight: '12px' }} />
+                  <Rocket size={24} color="#10b981" style={{ marginRight: '12px' }} />
                   <h3 style={{ 
                     fontSize: '12px', 
                     textTransform: 'uppercase',
@@ -705,21 +724,21 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
                     fontWeight: '600',
                     color: 'rgba(255, 255, 255, 0.6)'
                   }}>
-                    Failure Probability
+                    Scalability Potential
                   </h3>
                 </div>
                 <div className="metric-number" style={{ 
-                  color: getScoreColor(analysis.failureProbability),
+                  color: getPositiveScoreColor(analysis.scalabilityScore),
                   marginBottom: '16px'
                 }}>
-                  {analysis.failureProbability}%
+                  {analysis.scalabilityScore}%
                 </div>
                 <div className="progress-bar">
                   <div 
                     className="progress-fill"
                     style={{ 
-                      width: `${analysis.failureProbability}%`,
-                      background: `linear-gradient(90deg, ${getScoreColor(analysis.failureProbability)}, ${getScoreColor(analysis.failureProbability)}dd)`
+                      width: `${analysis.scalabilityScore}%`,
+                      background: `linear-gradient(90deg, ${getPositiveScoreColor(analysis.scalabilityScore)}, ${getPositiveScoreColor(analysis.scalabilityScore)}dd)`
                     }}
                   />
                 </div>
@@ -740,7 +759,7 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
                   </h3>
                 </div>
                 <div className="metric-number" style={{ 
-                  color: getInverseScoreColor(analysis.marketSentimentIndex),
+                  color: getPositiveScoreColor(analysis.marketSentimentIndex),
                   marginBottom: '16px'
                 }}>
                   {analysis.marketSentimentIndex}%
@@ -750,16 +769,16 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
                     className="progress-fill"
                     style={{ 
                       width: `${analysis.marketSentimentIndex}%`,
-                      background: `linear-gradient(90deg, ${getInverseScoreColor(analysis.marketSentimentIndex)}, ${getInverseScoreColor(analysis.marketSentimentIndex)}dd)`
+                      background: `linear-gradient(90deg, ${getPositiveScoreColor(analysis.marketSentimentIndex)}, ${getPositiveScoreColor(analysis.marketSentimentIndex)}dd)`
                     }}
                   />
                 </div>
               </div>
 
-              {/* exit alignment */}
+              {/* innovation index */}
               <div className="glass-card">
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
-                  <Target size={24} color="#8b5cf6" style={{ marginRight: '12px' }} />
+                  <TrendingUp size={24} color="#8b5cf6" style={{ marginRight: '12px' }} />
                   <h3 style={{ 
                     fontSize: '12px', 
                     textTransform: 'uppercase',
@@ -767,31 +786,31 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
                     fontWeight: '600',
                     color: 'rgba(255, 255, 255, 0.6)'
                   }}>
-                    Exit Alignment
+                    Innovation Index
                   </h3>
                 </div>
                 <div className="metric-number" style={{ 
-                  color: getInverseScoreColor(analysis.exitAlignmentScore),
+                  color: getPositiveScoreColor(analysis.innovationIndex),
                   marginBottom: '16px'
                 }}>
-                  {analysis.exitAlignmentScore}%
+                  {analysis.innovationIndex}%
                 </div>
                 <div className="progress-bar">
                   <div 
                     className="progress-fill"
                     style={{ 
-                      width: `${analysis.exitAlignmentScore}%`,
-                      background: `linear-gradient(90deg, ${getInverseScoreColor(analysis.exitAlignmentScore)}, ${getInverseScoreColor(analysis.exitAlignmentScore)}dd)`
+                      width: `${analysis.innovationIndex}%`,
+                      background: `linear-gradient(90deg, ${getPositiveScoreColor(analysis.innovationIndex)}, ${getPositiveScoreColor(analysis.innovationIndex)}dd)`
                     }}
                   />
                 </div>
               </div>
             </div>
 
-            {/* brutal summary */}
+            {/* balanced summary */}
             <div className="glass-card" style={{ marginBottom: '40px' }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
-                <AlertTriangle size={24} color="#f59e0b" style={{ marginRight: '12px' }} />
+                <Target size={24} color="#8b5cf6" style={{ marginRight: '12px' }} />
                 <h3 style={{ 
                   fontSize: '14px', 
                   textTransform: 'uppercase',
@@ -799,7 +818,7 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
                   fontWeight: '600',
                   color: 'rgba(255, 255, 255, 0.8)'
                 }}>
-                  The Verdict
+                  Overall Assessment
                 </h3>
               </div>
               <p style={{ 
@@ -809,7 +828,7 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
                 fontFamily: 'Fira Code, monospace',
                 fontWeight: '400'
               }}>
-                {analysis.brutalSummary}
+                {analysis.balancedSummary}
               </p>
             </div>
 
@@ -820,7 +839,7 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
               gap: '24px',
               marginBottom: '40px'
             }}>
-              {/* failure reasons */}
+              {/* scalability insights */}
               <div className="glass-card">
                 <h3 style={{ 
                   fontSize: '14px', 
@@ -828,12 +847,12 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
                   letterSpacing: '1.5px',
                   marginBottom: '24px',
                   fontWeight: '600',
-                  color: '#ef4444'
+                  color: '#10b981'
                 }}>
-                  Top Failure Risks
+                  Scalability Analysis
                 </h3>
                 <ul style={{ listStyle: 'none' }}>
-                  {analysis.topFailureReasons.map((reason, idx) => (
+                  {analysis.scalabilityExplanation.map((point, idx) => (
                     <li key={idx} style={{ 
                       marginBottom: '20px',
                       paddingLeft: '32px',
@@ -846,13 +865,12 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
                       <span style={{ 
                         position: 'absolute',
                         left: '0',
-                        color: '#ef4444',
-                        fontWeight: '700',
-                        fontSize: '16px'
+                        color: '#10b981',
+                        fontSize: '20px'
                       }}>
-                        {idx + 1}.
+                        •
                       </span>
-                      {reason}
+                      {point}
                     </li>
                   ))}
                 </ul>
@@ -895,7 +913,7 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
                 </ul>
               </div>
 
-              {/* exit alignment */}
+              {/* innovation insights */}
               <div className="glass-card">
                 <h3 style={{ 
                   fontSize: '14px', 
@@ -905,51 +923,110 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
                   fontWeight: '600',
                   color: '#8b5cf6'
                 }}>
-                  Exit Strategy
+                  Innovation Analysis
                 </h3>
-                <div style={{ marginBottom: '20px' }}>
-                  <div style={{ 
-                    fontSize: '11px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px',
-                    color: 'rgba(255, 255, 255, 0.4)',
-                    marginBottom: '8px',
-                    fontWeight: '600'
-                  }}>
-                    Likely Acquirers
-                  </div>
-                  <p style={{ 
-                    fontSize: '15px',
-                    lineHeight: '1.7',
-                    fontFamily: 'Fira Code, monospace',
-                    color: 'rgba(255, 255, 255, 0.85)'
-                  }}>
-                    {analysis.exitAlignmentExplanation.acquirerTypes}
-                  </p>
-                </div>
-                <div>
-                  <div style={{ 
-                    fontSize: '11px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px',
-                    color: 'rgba(255, 255, 255, 0.4)',
-                    marginBottom: '8px',
-                    fontWeight: '600'
-                  }}>
-                    Attractiveness
-                  </div>
-                  <p style={{ 
-                    fontSize: '15px',
-                    lineHeight: '1.7',
-                    fontFamily: 'Fira Code, monospace',
-                    color: 'rgba(255, 255, 255, 0.85)'
-                  }}>
-                    {analysis.exitAlignmentExplanation.attractiveness}
-                  </p>
-                </div>
+                <ul style={{ listStyle: 'none' }}>
+                  {analysis.innovationExplanation.map((point, idx) => (
+                    <li key={idx} style={{ 
+                      marginBottom: '20px',
+                      paddingLeft: '32px',
+                      position: 'relative',
+                      fontSize: '15px',
+                      lineHeight: '1.7',
+                      fontFamily: 'Fira Code, monospace',
+                      color: 'rgba(255, 255, 255, 0.85)'
+                    }}>
+                      <span style={{ 
+                        position: 'absolute',
+                        left: '0',
+                        color: '#8b5cf6',
+                        fontSize: '20px'
+                      }}>
+                        •
+                      </span>
+                      {point}
+                    </li>
+                  ))}
+                </ul>
               </div>
 
-              {/* historical patterns */}
+              {/* key risks */}
+              <div className="glass-card">
+                <h3 style={{ 
+                  fontSize: '14px', 
+                  textTransform: 'uppercase',
+                  letterSpacing: '1.5px',
+                  marginBottom: '24px',
+                  fontWeight: '600',
+                  color: '#ef4444'
+                }}>
+                  Key Risks
+                </h3>
+                <ul style={{ listStyle: 'none' }}>
+                  {analysis.keyRisks.map((risk, idx) => (
+                    <li key={idx} style={{ 
+                      marginBottom: '20px',
+                      paddingLeft: '32px',
+                      position: 'relative',
+                      fontSize: '15px',
+                      lineHeight: '1.7',
+                      fontFamily: 'Fira Code, monospace',
+                      color: 'rgba(255, 255, 255, 0.85)'
+                    }}>
+                      <span style={{ 
+                        position: 'absolute',
+                        left: '0',
+                        color: '#ef4444',
+                        fontWeight: '700',
+                        fontSize: '16px'
+                      }}>
+                        {idx + 1}.
+                      </span>
+                      {risk}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* key opportunities */}
+              <div className="glass-card">
+                <h3 style={{ 
+                  fontSize: '14px', 
+                  textTransform: 'uppercase',
+                  letterSpacing: '1.5px',
+                  marginBottom: '24px',
+                  fontWeight: '600',
+                  color: '#10b981'
+                }}>
+                  Key Opportunities
+                </h3>
+                <ul style={{ listStyle: 'none' }}>
+                  {analysis.keyOpportunities.map((opp, idx) => (
+                    <li key={idx} style={{ 
+                      marginBottom: '20px',
+                      paddingLeft: '32px',
+                      position: 'relative',
+                      fontSize: '15px',
+                      lineHeight: '1.7',
+                      fontFamily: 'Fira Code, monospace',
+                      color: 'rgba(255, 255, 255, 0.85)'
+                    }}>
+                      <span style={{ 
+                        position: 'absolute',
+                        left: '0',
+                        color: '#10b981',
+                        fontWeight: '700',
+                        fontSize: '16px'
+                      }}>
+                        {idx + 1}.
+                      </span>
+                      {opp}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* historical comparisons */}
               <div className="glass-card">
                 <h3 style={{ 
                   fontSize: '14px', 
@@ -959,7 +1036,7 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
                   fontWeight: '600',
                   color: '#f59e0b'
                 }}>
-                  Historical Parallels
+                  Historical Comparisons
                 </h3>
                 <p style={{ 
                   fontSize: '15px',
@@ -967,12 +1044,12 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
                   fontFamily: 'Fira Code, monospace',
                   color: 'rgba(255, 255, 255, 0.85)'
                 }}>
-                  {analysis.historicalFailurePatterns}
+                  {analysis.historicalComparisons}
                 </p>
               </div>
             </div>
 
-            {/* what could change */}
+            {/* strategic recommendations */}
             <div className="glass-card">
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
                 <Zap size={24} color="#10b981" style={{ marginRight: '12px' }} />
@@ -983,11 +1060,11 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
                   fontWeight: '600',
                   color: '#10b981'
                 }}>
-                  Path Forward
+                  Strategic Recommendations
                 </h3>
               </div>
               <ul style={{ listStyle: 'none' }}>
-                {analysis.whatCouldChange.map((change, idx) => (
+                {analysis.strategicRecommendations.map((rec, idx) => (
                   <li key={idx} style={{ 
                     marginBottom: '20px',
                     paddingLeft: '32px',
@@ -1006,7 +1083,7 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
                     }}>
                       →
                     </span>
-                    {change}
+                    {rec}
                   </li>
                 ))}
               </ul>
@@ -1053,7 +1130,7 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
                       gap: '20px',
                       fontFamily: 'Fira Code, monospace'
                     }}>
-                      <span>failure risk: {saved.failureProbability}%</span>
+                      <span>scalability: {saved.scalabilityScore}%</span>
                       <span>•</span>
                       <span>{new Date(saved.timestamp).toLocaleDateString()}</span>
                     </div>
@@ -1089,7 +1166,7 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
           letterSpacing: '0.5px',
           fontFamily: 'Fira Code, monospace'
         }}>
-          powered by google gemini • evidence-driven analysis • no hype
+          powered by google gemini • balanced analysis • realistic insights
         </div>
       </div>
     </div>

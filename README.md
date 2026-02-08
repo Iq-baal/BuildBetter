@@ -1,190 +1,151 @@
 # BuildBetter
 
-AI-powered startup viability analysis. Get evidence-driven, brutally honest feedback on your startup idea.
+Validate your startup idea with AI-powered analysis. Get realistic, evidence-based feedback on scalability, market potential, and innovation.
 
-## Features
+## What BuildBetter Does
 
-- **AI Analysis** - Powered by Google Gemini 2.0 Flash Thinking
-- **Consistent Results** - Same pitch = same analysis (deterministic)
-- **Interactive UI** - Fluid mouse effects, premium design
-- **Persistent Storage** - Save and review past analyses
-- **Fully Responsive** - Works on all screen sizes
-- **Production Ready** - Security headers, optimized builds, health checks
+BuildBetter analyzes your startup idea and gives you three critical scores:
 
-## Quick Start
+**🚀 Scalability Potential** - How well your idea can grow from 10 to 10,000 customers
 
-```bash
-# get gemini api key (free)
-# visit: https://aistudio.google.com/app/apikey
+**📊 Market Sentiment** - How receptive the current market is to your solution
 
-# install
-npm install
+**📈 Innovation Index** - How unique and defensible your competitive advantage is
 
-# create .env file
-cp .env.example .env
-# edit .env and add your api key
+You'll also get:
+- Key risks to watch out for
+- Key opportunities to pursue
+- Comparisons to similar startups (successes and failures)
+- Strategic recommendations to improve your chances
+- A balanced assessment of your idea's viability
 
-# run locally
-npm run dev
-# open http://localhost:3000
+## How to Use It
 
-# build for production
-npm run build
+### Writing Your Startup Pitch
 
-# preview production build
-npm run preview
+The better your pitch, the better the analysis. Include these elements:
+
+**1. The Problem**
+```
+What specific problem are you solving?
+Who has this problem?
+How painful is it?
 ```
 
-## Tech Stack
-
-- React 18
-- Vite
-- Google Gemini API
-- Lucide React (icons)
-- Canvas API (fluid effects)
-
-## Project Structure
-
+**2. Your Solution**
 ```
-buildbetter/
-├── src/
-│   └── App.jsx              # main app component
-├── public/
-│   ├── favicon.svg          # favicon
-│   └── logo.svg             # app logo
-├── index.html               # entry point
-├── main.jsx                 # react entry
-├── package.json             # dependencies
-├── vite.config.js           # build config
-├── .env.example             # env template
-├── Dockerfile               # docker build
-├── docker-compose.yml       # docker compose
-├── nginx.conf               # nginx config
-├── vercel.json              # vercel config
-└── netlify.toml             # netlify config
+What's your product/service?
+How does it solve the problem?
+What makes it different from existing solutions?
 ```
 
-## Environment Variables
-
-Required:
-- `VITE_GEMINI_API_KEY` - Your Gemini API key
-
-Get your free API key: https://aistudio.google.com/app/apikey
-
-## Deployment
-
-### Vercel (Recommended)
-
-```bash
-# install vercel cli
-npm i -g vercel
-
-# deploy
-vercel --prod
-
-# add env var
-vercel env add VITE_GEMINI_API_KEY
+**3. Target Market**
+```
+Who are your customers?
+How big is the market?
+How will you reach them?
 ```
 
-### Netlify
-
-```bash
-# install netlify cli
-npm i -g netlify-cli
-
-# build
-npm run build
-
-# deploy
-netlify deploy --prod --dir=dist
+**4. Business Model**
+```
+How will you make money?
+What's your pricing strategy?
+What are your unit economics?
 ```
 
-Add `VITE_GEMINI_API_KEY` in Netlify dashboard: Site settings → Environment variables
-
-### Docker
-
-```bash
-# build and run
-docker-compose up -d
-
-# or manually
-docker build -t buildbetter .
-docker run -p 80:80 buildbetter
+**5. Competitive Advantage**
+```
+What's your unfair advantage?
+Why can't competitors easily copy you?
+What's your moat?
 ```
 
-## Security
+### Example Good Pitch
 
-- CSP headers configured in nginx.conf
-- No API keys in client code (uses env vars)
-- XSS protection enabled
-- CORS restricted to Gemini API only
-- No localStorage security issues (only stores non-sensitive data)
+```
+We're building a B2B SaaS platform that helps mid-size e-commerce 
+companies (50-500 employees) reduce cart abandonment by 30% using 
+AI-powered exit-intent personalization.
 
-**Important**: Never commit `.env` file. It's in `.gitignore` but double-check.
+The problem: E-commerce companies lose 70% of potential sales to cart 
+abandonment. Current solutions (generic popups, email reminders) have 
+<5% conversion rates.
 
-## API Key Security
+Our solution: Real-time AI that analyzes user behavior, inventory data, 
+and market trends to generate personalized offers at the exact moment 
+of exit intent. We've achieved 23% conversion rates in beta.
 
-The app handles API keys in two ways:
+Market: $12B TAM, targeting 50,000 mid-market e-commerce companies in 
+North America. CAC of $2,400, LTV of $18,000 (7.5x ratio).
 
-1. **Environment Variable** (recommended for production)
-   - Set `VITE_GEMINI_API_KEY` in your deployment platform
-   - Key is baked into build, not exposed to users
+Business model: SaaS subscription starting at $499/month, scaling with 
+transaction volume. 85% gross margins.
 
-2. **User Prompt** (fallback)
-   - If no env var, prompts user for their own key
-   - Stored in localStorage
-   - Good for personal use, not public deployments
-
-## Deterministic Analysis
-
-The app ensures consistent analysis:
-- Hashes the pitch text
-- Uses hash as seed for AI
-- Checks cache before making new API calls
-- Same pitch = same results every time
-
-This prevents wasting API calls and provides reliability.
-
-## Performance
-
-- First Contentful Paint: < 1.2s
-- Time to Interactive: < 2.5s
-- Lighthouse Score: 95+
-- Bundle size: ~180KB gzipped
-- Fluid effects: 60fps on modern devices
-
-## Browser Support
-
-- Chrome/Edge 90+
-- Firefox 88+
-- Safari 14+
-
-## Contributing
-
-This is a production app. Test thoroughly before committing:
-
-```bash
-# test locally
-npm run dev
-
-# test production build
-npm run build
-npm run preview
-
-# check bundle size
-npm run build -- --mode production
+Competitive advantage: Proprietary dataset of 500M+ shopping sessions, 
+partnerships with Shopify and BigCommerce for direct integration, 
+18-month technical lead on competitors.
 ```
 
-## License
+### Example Bad Pitch (Too Vague)
 
-Proprietary - All rights reserved
+```
+We're making an app for social networking but better. 
+It's like Instagram meets TikTok but for professionals.
+We'll make money from ads and premium features.
+```
 
-## Support
+**Why it's bad:** No specific problem, no clear differentiation, no market data, no business model details.
 
-Issues? Check:
-1. API key is valid
-2. Environment variables are set
-3. Build completed without errors
-4. Browser console for errors
+## Understanding Your Results
 
-For production issues, check server logs and health endpoint at `/health`.
+### Score Ranges
+
+**70-100% (Green)** - Strong potential
+- Scalability: Can grow efficiently
+- Market: High demand, good timing
+- Innovation: Unique, defensible
+
+**40-69% (Orange)** - Moderate potential
+- Needs refinement
+- Some concerns to address
+- Viable with improvements
+
+**0-39% (Red)** - Significant challenges
+- Major risks identified
+- Fundamental issues
+- Requires pivot or major changes
+
+### What the Analysis Tells You
+
+**If scores are high:** Your idea has strong fundamentals. Focus on execution and the strategic recommendations.
+
+**If scores are mixed:** You have potential but need to address specific weaknesses. Read the Key Risks section carefully.
+
+**If scores are low:** The analysis will explain why. Don't ignore it - either pivot based on the recommendations or reconsider the opportunity.
+
+## Tips for Better Results
+
+1. **Be specific** - "Reduce customer churn by 25%" beats "improve retention"
+2. **Include numbers** - Market size, pricing, conversion rates, costs
+3. **Show traction** - Beta users, revenue, partnerships, waitlist size
+4. **Explain your edge** - Why you? Why now? Why can't others do this?
+5. **Be honest** - The AI can spot vague claims and will call them out
+
+## What Makes BuildBetter Different
+
+- **Balanced analysis** - Shows both opportunities and risks
+- **Evidence-based** - Compares to real startup patterns and market data
+- **Consistent** - Same pitch always gets the same analysis
+- **Actionable** - Gives specific recommendations, not just criticism
+- **Fast** - Results in 10-15 seconds
+
+## Privacy & Data
+
+- Your pitches are analyzed by AI but not stored on our servers
+- Analysis history is saved locally in your browser
+- You can delete any analysis at any time
+- No personal information is collected
+
+---
+
+**Ready to validate your idea?** Visit the app and paste your pitch to get started.
