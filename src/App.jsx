@@ -131,22 +131,19 @@ export default function BuildBetter() {
 
   const loadSavedAnalyses = async () => {
     try {
-      const keys = await window.storage.list('analysis:');
-      if (keys && keys.keys) {
-        const analyses = await Promise.all(
-          keys.keys.map(async (key) => {
-            try {
-              const result = await window.storage.get(key);
-              return result ? JSON.parse(result.value) : null;
-            } catch {
-              return null;
-            }
-          })
-        );
-        setSavedAnalyses(analyses.filter(a => a !== null).sort((a, b) => b.timestamp - a.timestamp));
-      }
+      // use localStorage instead of window.storage (which only works in claude.ai)
+      const savedKeys = Object.keys(localStorage).filter(k => k.startsWith('analysis:'));
+      const analyses = savedKeys.map(key => {
+        try {
+          return JSON.parse(localStorage.getItem(key));
+        } catch {
+          return null;
+        }
+      }).filter(a => a !== null);
+      
+      setSavedAnalyses(analyses.sort((a, b) => b.timestamp - a.timestamp));
     } catch (err) {
-      // first time user probably
+      // first time user or storage disabled
       console.log('no saved analyses');
     }
   };
@@ -309,9 +306,14 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
       
       setAnalysis(analysisWithMeta);
       
-      // save for future lookups
-      await window.storage.set(analysisWithMeta.id, JSON.stringify(analysisWithMeta));
-      await loadSavedAnalyses();
+      // save to localStorage instead of window.storage
+      try {
+        localStorage.setItem(analysisWithMeta.id, JSON.stringify(analysisWithMeta));
+        loadSavedAnalyses();
+      } catch (storageErr) {
+        console.warn('Could not save analysis:', storageErr);
+        // analysis still works, just won't be saved
+      }
       
     } catch (err) {
       setError('analysis failed: ' + err.message);
@@ -327,10 +329,10 @@ CONSISTENCY SEED: ${seed} - Use this to ensure identical analysis for identical 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const deleteAnalysis = async (id) => {
+  const deleteAnalysis = (id) => {
     try {
-      await window.storage.delete(id);
-      await loadSavedAnalyses();
+      localStorage.removeItem(id);
+      loadSavedAnalyses();
       if (analysis && analysis.id === id) {
         setAnalysis(null);
       }
